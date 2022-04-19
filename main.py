@@ -5,12 +5,13 @@ Spyder Editor
 This is a temporary script file.
 """
 
-# Importing libraries
+# Importing 
+import time
 import pandas as pd
 from numpy import *
 from simulation import simulate_path, moment_matching, simulate_path_moment_matched
 from BlackScholes import BS
-from Contracts import AsianOption, OptionType, AveragingType, StrikeType
+from Contracts import AsianOption, LookbackOption, EuropeanOption, OptionType, AveragingType, StrikeType
 from CQF_Assignment_2 import test_martingale_property_asset_price_path
 
 import matplotlib
@@ -26,20 +27,35 @@ matplotlib.rcParams['lines.linewidth'] = 2.0
 pd.set_option('display.max_rows', 300)
 
 
+# Global initial market and contract initial parameters
+
 spot_price = 100; risk_free_rate = 0.05; asset_volatility = 0.20; time_horizon = 1; timesteps = 252; antithetic = True
 
-
-asset_paths = simulate_path_moment_matched(spot_price, risk_free_rate, asset_volatility, time_horizon, timesteps, 100)
+# Test variance reduction technique: moment-matching 
+#start_time = time.time()
 #phi = moment_matching(0., 1., 1000, 5)
-
+#asset_paths = simulate_path_moment_matched(spot_price, risk_free_rate, asset_volatility, time_horizon, timesteps, 100)
 #time_step_mean = mean(phi, axis = 0)
 #time_step_std = std(phi, axis = 0)
-
 #print(shape(phi))
+#print("--- %s seconds ---" % (time.time() - start_time))
 
-#print(time_step_mean)
-#print(time_step_std)
+# Test asset price path convergence
+#start_time = time.time()
 #asset_price_path_convergence = test_martingale_property_asset_price_path(spot_price, risk_free_rate, asset_volatility, timesteps, antithetic)
+#print("--- %s seconds ---" % (time.time() - start_time))
+
+
+# Test European option payoff against analytical Black Scholes
+
+asset_paths = simulate_path_moment_matched(spot_price, risk_free_rate, asset_volatility, time_horizon, timesteps, 100000)
+time_line = linspace(0, time_horizon, timesteps)
+option_type = OptionType.CALL
+european = EuropeanOption(time_line, asset_paths, option_type, strike, rate, tte)
+
+print(f'European Option by Monte Carlo: {european.call_price:0.4f}, {european.put_price:0.4f}')
+
+
 
 
 # =============================================================================

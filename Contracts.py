@@ -201,8 +201,8 @@ class LookbackOption:
 
     def _price(self):
         discount_factor = exp(-self.rate * self.tte)
-        call_price = discount_factor * maximum(mean(self.s_mat) - self.strike, 0.)
-        put_price = discount_factor * 
+        call_price = discount_factor * maximum(maximum(mean(self.s_mat, axis = 0)) - self.strike, 0.)
+        put_price = discount_factor * maximum(self.strike - minimum(mean(self.s_mat, axis = 0)), 0.)
         return [call_price, put_price]
             
     
