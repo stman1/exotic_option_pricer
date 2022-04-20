@@ -71,13 +71,16 @@ spot_price = 100; strike_price = 100; risk_free_rate = 0.05; asset_volatility = 
 # Run a scenario
 
 market_parameters = {'start_val': 100, 'drift' : 0.05, 'volatility' : 0.2, 'time' : 1}
-contract_parameters = { 'payoff_type' : PayoffType.EUROPEAN,  'option_type' : OptionType.CALL, 'strike' : 100}
+contract_parameters = { 'payoff_type' : PayoffType.ASIAN,  'strike_type' : StrikeType.FIXED, 'averaging_type' : AveragingType.ARITHMETIC, 'option_type' : OptionType.CALL, 'strike' : 100}
 calculation_parameters = { 'analytic' : True, 'monte_carlo' : False}
 simulation_parameters = {'num_sims': 10000, 'time_steps' : 252, 'antithetic' : True}
 
 my_scenario = Scenario(market_parameters, contract_parameters, calculation_parameters, simulation_parameters)
 
-my_scenario.run_scenario()
+my_scenario.define_scenario(['contract', 'strike', 0, 500, 25])
+
+
+# my_scenario.run_scenario()
 # 
 # =============================================================================
 

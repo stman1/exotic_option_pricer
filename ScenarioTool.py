@@ -51,7 +51,7 @@ class Scenario:
         
         # market parameters, read in dictionaries
         for key in market_parameter:
-            self.market[key] = market_parameter[key]
+            self.market[key] = [market_parameter[key]]
             
         # contract parameters, read in dictionaries
         for key in contract_parameter:
@@ -64,7 +64,33 @@ class Scenario:
         # market parameters, read in dictionaries
         for key in calculation_parameter:
             self.calculation[key] = calculation_parameter[key]
+            
+        self.scenario = {'market' : self.market, 
+                         'contract' : self.contract, 
+                         'simulation' : self.simulation, 
+                         'calculation' : self.calculation}
     
+    
+    def define_scenario(self, scenario_definition):
+        if scenario_definition[0] not in self.scenario:
+            print(f'{scenario_definition[0]} is not a valid scenario type')
+            return
+            
+        if scenario_definition[1] not in self.scenario[scenario_definition[0]]:
+            print(f'{scenario_definition[1]} is not a valid parameter in scenario type {scenario_definition[0] }')
+            return
+        
+        if isinstance(scenario_definition[2], (int, float)) and not isinstance(scenario_definition[2], bool):
+            if isinstance(scenario_definition[3], (int, float)) and not isinstance(scenario_definition[3], bool):
+                if scenario_definition[2] < scenario_definition[3]:
+                    self.scenario[scenario_definition[0]][scenario_definition[1]][1].\
+                        append([param_val for param_val in range(scenario_definition[2], scenario_definiton[3] + scenario_definiton[4] , scenario_definition[4])])
+                    
+            
+        
+        
+        
+        
     
     
     # run a scenario
@@ -100,8 +126,9 @@ class Scenario:
                                      self.market['time'])
     
         num_sims = self.simulation['num_sims']
+        payoff_type = self.contract['payoff_type']
         print(f'Number of MC simulations : {num_sims}')
-        print(f'European Option by Monte Carlo: {option.call_price:0.4f}, {option.put_price:0.4f}')
+        print(f'{payoff_type} by Monte Carlo: {option.call_price:0.4f}, {option.put_price:0.4f}')
        
        
     def _generate_asset_paths(self):
