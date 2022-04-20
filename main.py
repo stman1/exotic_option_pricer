@@ -11,7 +11,8 @@ import pandas as pd
 from numpy import *
 from simulation import simulate_path, moment_matching, simulate_path_moment_matched
 from BlackScholes import BS
-from Contracts import AsianOption, LookbackOption, EuropeanOption, OptionType, AveragingType, StrikeType
+from Contracts import AsianOption, LookbackOption, EuropeanOption, PayoffType, OptionType, AveragingType, StrikeType
+from ScenarioTool import Scenario
 from CQF_Assignment_2 import test_martingale_property_asset_price_path
 
 import matplotlib
@@ -27,9 +28,9 @@ matplotlib.rcParams['lines.linewidth'] = 2.0
 pd.set_option('display.max_rows', 300)
 
 
-# Global initial market and contract initial parameters
+# Global initial market, contract and simulation parameters
 
-spot_price = 100; risk_free_rate = 0.05; asset_volatility = 0.20; time_horizon = 1; timesteps = 252; antithetic = True
+spot_price = 100; strike_price = 100; risk_free_rate = 0.05; asset_volatility = 0.20; time_horizon = 1; timesteps = 252; antithetic = True
 
 # Test variance reduction technique: moment-matching 
 #start_time = time.time()
@@ -46,17 +47,39 @@ spot_price = 100; risk_free_rate = 0.05; asset_volatility = 0.20; time_horizon =
 #print("--- %s seconds ---" % (time.time() - start_time))
 
 
-# Test European option payoff against analytical Black Scholes
+# Validate European option payoff against analytical Black Scholes pricer
 
-asset_paths = simulate_path_moment_matched(spot_price, risk_free_rate, asset_volatility, time_horizon, timesteps, 100000)
-time_line = linspace(0, time_horizon, timesteps)
-option_type = OptionType.CALL
-european = EuropeanOption(time_line, asset_paths, option_type, strike, rate, tte)
+# =============================================================================
+# num_sims = 1000000
+# 
+# start_time = time.time()
+# asset_paths = simulate_path(spot_price, risk_free_rate, asset_volatility, time_horizon, timesteps, num_sims, True)
+# time_line = linspace(0, time_horizon, timesteps)
+# option_type = OptionType.CALL
+# european = EuropeanOption(time_line, asset_paths, option_type, strike_price, risk_free_rate, time_horizon)
+# print(f'Number of MC simulations : {num_sims}')
+# print(f'European Option by Monte Carlo: {european.call_price:0.4f}, {european.put_price:0.4f}')
+# print("--- %s seconds ---" % (time.time() - start_time))
+# 
+# # Setup BS analytic pricer
+# 
+# analytic_bs = BS(100, 100, 0.05, 1, 0.2)
+# print(f'Analytic BS Call Option price: {analytic_bs.callPrice:0.4f}')
+# print(f'Analytic BS Put Option price: {analytic_bs.putPrice:0.4f}')
 
-print(f'European Option by Monte Carlo: {european.call_price:0.4f}, {european.put_price:0.4f}')
 
+# Run a scenario
 
+market_parameters = {'start_val': 100, 'drift' : 0.05, 'volatility' : 0.2, 'time' : 1}
+contract_parameters = { 'payoff_type' : PayoffType.EUROPEAN,  'option_type' : OptionType.CALL, 'strike' : 100}
+calculation_parameters = { 'analytic' : True, 'monte_carlo' : False}
+simulation_parameters = {'num_sims': 10000, 'time_steps' : 252, 'antithetic' : True}
 
+my_scenario = Scenario(market_parameters, contract_parameters, calculation_parameters, simulation_parameters)
+
+my_scenario.run_scenario()
+# 
+# =============================================================================
 
 # =============================================================================
 # # Call the simulation function

@@ -21,6 +21,12 @@ class StrikeType(Enum):
 class AveragingType(Enum):
     ARITHMETIC = 1
     GEOMETRIC = 2
+    
+    
+class PayoffType(Enum):
+    EUROPEAN = 1
+    ASIAN = 2
+    LOOKBACK = 3
 
 
 class EuropeanOption:

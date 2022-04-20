@@ -8,7 +8,7 @@ Created on Mon Apr 18 12:48:16 2022
 from numpy import *
 from scipy.stats import norm
 
-class BSGeometricAsian:
+class AnayticGeometricAsian:
     
     """
     This is a class for geometric Asian options contracts on stocks without dividends.
