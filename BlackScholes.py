@@ -60,18 +60,27 @@ class BS:
                   'callRho', 'putRho', 'vega', 'gamma']:
             self.__dict__[i] = None
         
-        [self.callPrice, self.putPrice] = self._price()
-        [self.callDelta, self.putDelta] = self._delta()
-        [self.callTheta, self.putTheta] = self._theta()
-        [self.callRho, self.putRho] = self._rho()
+        [self.call_price, self.put_price] = self._price()
+        [self.call_delta, self.put_delta] = self._delta()
+        [self.call_theta, self.put_theta] = self._theta()
+        [self.call_rho, self.put_rho] = self._rho()
         self.vega = self._vega()
         self.gamma = self._gamma()
+        
+    
+    def _update_intermediate_calcs(self):
+        self._a_ = self.volatility * self.dte**0.5
+        self._d1_ = (log(self.spot / self.strike) + \
+                 (self.rate + (self.volatility**2) / 2) * self.dte) / self._a_
+        self._d2_ = self._d1_ - self._a_
+        self._b_ = e**-(self.rate * self.dte)
         
     
     # Option Price
     def _price(self):
         '''Returns the option price: [Call price, Put price]'''
-
+        # update d1, d2, etc before computing price
+        self._update_intermediate_calcs()
         if self.volatility == 0 or self.dte == 0:
             call = maximum(0.0, self.spot - self.strike)
             put = maximum(0.0, self.strike - self.spot)
@@ -82,6 +91,8 @@ class BS:
             put = self.strike * e**(-self.rate * self.dte) * norm.cdf(-self._d2_) - \
                                                                         self.spot * norm.cdf(-self._d1_)
         return [call, put]
+
+
 
     # Option Delta
     def _delta(self):

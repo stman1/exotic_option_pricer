@@ -115,26 +115,23 @@ class Scenario:
     
     # run a scenario
     def _run_single_scenario(self):
-        time_line = linspace(0, self.market['time']['eval'], self.simulation['time_steps']['eval'])
-        option = self._instantiate_contract(time_line)
+        option = self._instantiate_contract()
         num_sims = self.simulation['num_sims']['eval']
         payoff_type = self.contract['payoff_type']['eval']
         print(f'Number of MC simulations : {num_sims}')
         print(f'{payoff_type} by Monte Carlo: {option.call_price:0.4f}, {option.put_price:0.4f}')
        
        
-    def _instantiate_contract(self, time_line):
+    def _instantiate_contract(self):
         if self.contract['payoff_type']['eval'] == PayoffType.EUROPEAN:
-            option = EuropeanOption(time_line, 
-                                     self.asset_paths, 
+            option = EuropeanOption(self.asset_paths, 
                                      self.contract['option_type']['eval'], 
                                      self.contract['strike']['eval'], 
                                      self.market['drift']['eval'], 
                                      self.market['time']['eval'])
            
         elif self.contract['payoff_type']['eval'] == PayoffType.ASIAN:
-            option = AsianOption(time_line, 
-                                 self.asset_paths, 
+            option = AsianOption(self.asset_paths, 
                                  self.contract['option_type']['eval'],
                                  self.contract['strike_type']['eval'],
                                  self.contract['averaging_type']['eval'], 
@@ -143,8 +140,7 @@ class Scenario:
                                  self.market['time']['eval'])
            
         elif self.contract['payoff_type']['eval'] == PayoffType.LOOKBACK:
-            option = LookbackOption(time_line, 
-                                     self.asset_paths, 
+            option = LookbackOption(self.asset_paths, 
                                      self.contract['option_type']['eval'], 
                                      self.contract['strike']['eval'], 
                                      self.market['drift']['eval'], 

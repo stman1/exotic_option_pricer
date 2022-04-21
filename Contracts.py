@@ -40,10 +40,7 @@ class EuropeanOption:
         strike                  : int or float 
         tte                     : int or float [time to expiry, expressed as year fraction]
     """ 
-    def __init__(self, time_line, asset_paths, option_type, strike, rate, tte):
-        # Spot Price
-        self.tl = time_line
-        
+    def __init__(self, asset_paths, option_type, strike, rate, tte):
         # Array of asset paths
         self.s_mat = asset_paths
         
@@ -91,11 +88,7 @@ class AsianOption:
         tte             : int or float [time to expiry, expressed as year fraction]
     """ 
     
-    def __init__(self, time_line, asset_paths, option_type, strike_type, averaging_type, strike, rate, tte):
-        
-        # Spot Price
-        self.tl = time_line
-        
+    def __init__(self, asset_paths, option_type, strike_type, averaging_type, strike, rate, tte):        
         # Array of asset paths
         self.s_mat = asset_paths
         
@@ -129,8 +122,7 @@ class AsianOption:
         '''
         Contains all the attributes defined for the object itself. It maps the attribute name to its value.
         '''
-        for i in ['callPrice', 'putPrice', 'callDelta', 'putDelta', 'callTheta', 'putTheta', \
-                  'callRho', 'putRho', 'vega', 'gamma']:
+        for i in ['callPrice', 'putPrice']:
             self.__dict__[i] = None
         
         [self.call_price, self.put_price] = self._price()
@@ -166,11 +158,7 @@ class LookbackOption:
         tte                     : int or float [time to expiry, expressed as year fraction]
     """ 
     
-    def __init__(self, time_line, asset_paths, option_type, strike, rate, tte):
-        
-        # Spot Price
-        self.tl = time_line
-        
+    def __init__(self, asset_paths, option_type, strike, rate, tte):
         # Array of asset paths
         self.s_mat = asset_paths
         
