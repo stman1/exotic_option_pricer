@@ -17,7 +17,7 @@ class ParameterType(Enum):
     MARKET = 1
     CONTRACT = 2
     SIMULATION = 3
-    CALCULATIOMN = 4
+    CALCULATION = 4
 
 
 class Parameters:
@@ -87,11 +87,13 @@ class Scenario:
         
         # check each of market, contract, calculation, and simulation parameters for scenarios
         
-        # check market scenario
-        # if market parameters are present, run them
-        # self._run_market_scenario()
+        # check market scenarios
+        market_scenarios = self._find_scenario('market')
         
-        # check contract scenario
+        for ms in market_scenarios:
+            self._run_market_scenario(ms)
+        
+        # check contract scenarios
         # if contract parameters are present, run them
         contract_scenarios = self._find_scenario('contract')
         
@@ -104,20 +106,17 @@ class Scenario:
 
 
         # check simulation scenario
-        # if simulation parameters are present, run them
-        # self._run_simulation_scenario()        
-        pass
+        simulation_scenarios = self._find_scenario('simulation')
+        
+        for ss in simulation_scenarios:
+            self._run_simulation_scenario(ss)  
         
     
     
     # run a scenario
     def _run_single_scenario(self):
-        self._generate_asset_paths()
-       
         time_line = linspace(0, self.market['time']['eval'], self.simulation['time_steps']['eval'])
-       
         option = self._instantiate_contract(time_line)
-    
         num_sims = self.simulation['num_sims']['eval']
         payoff_type = self.contract['payoff_type']['eval']
         print(f'Number of MC simulations : {num_sims}')
@@ -161,22 +160,64 @@ class Scenario:
         
         
         
-    def _run_market_scenario(self):
+    def _run_market_scenario(self, market_scenario):
         # market scenarios always need a regeneration of asset paths
-        pass
+        print(". . . running market scenarios.")
+        try:
+            # save original parameter value
+            original_parameter_val = self.market[market_scenario[0]]['eval']
+            # unwrap scenario
+            market_parameter_space = self.market[market_scenario[0]]['scenario']
+
+            for param in market_parameter_space:
+                # generate asset paths
+                self._generate_asset_paths()
+                # change parameter in scenario
+                self.market[market_scenario[0]]['eval'] = param
+                self._run_single_scenario()
+                
+            # reset state of the object    
+            self.market[market_scenario[0]]['eval'] = original_parameter_val
+        except:
+            # reset state of the object    
+            self.market[market_scenario[0]]['eval'] = original_parameter_val
+            market_parameter_space = 'null'
+        
     
-    def _run_simulation_scenario(self):
-        #  simulation scenarios also always need a regeneration of asset paths
-        pass
+    def _run_simulation_scenario(self, simulation_scenario):
+        # simulation scenarios always need a regeneration of asset paths
+        print(". . . running simulation scenarios.")
+        try:
+            # save original parameter value
+            original_parameter_val = self.simulation[simulation_scenario[0]]['eval']
+            # unwrap scenario
+            simulation_parameter_space = self.simulation[simulation_scenario[0]]['scenario']
+
+            for param in simulation_parameter_space:
+                # generate asset paths
+                self._generate_asset_paths()
+                # change parameter in scenario
+                self.simulation[simulation_scenario[0]]['eval'] = param
+                self._run_single_scenario()
+                
+            # reset state of the object    
+            self.simulation[simulation_scenario[0]]['eval'] = original_parameter_val
+        except:
+            # reset state of the object    
+            self.simulation[simulation_scenario[0]]['eval'] = original_parameter_val
+            simulation_parameter_space = 'null'
     
     
     def _run_contract_scenario(self, contract_scenario):
         # a contract does not need newly generated asset paths
-        
+        print(". . . running contract scenarios.")
         try:
+            # save original parameter value
             original_parameter_val = self.contract[contract_scenario[0]]['eval']
             # unwrap scenario
             contract_parameter_space = self.contract[contract_scenario[0]]['scenario']
+            # generate asset paths
+            self._generate_asset_paths()
             # instantiate contract
             
             for param in contract_parameter_space:
@@ -186,7 +227,7 @@ class Scenario:
                 
             # reset state of the object    
             self.contract[contract_scenario[0]]['eval'] = original_parameter_val
-        except IndexError:
+        except:
             # reset state of the object    
             self.contract[contract_scenario[0]]['eval'] = original_parameter_val
             contract_parameter_space = 'null'
@@ -199,9 +240,9 @@ class Scenario:
     
     def _find_scenario(self, parameter_type):
         scenario_parameter = []
-        for first in self.scenario['contract'].keys():
-            if 'scenario' in list(self.scenario['contract'][first].keys()):
-                scenario_parameter.append([first, list(self.scenario['contract'][first]['scenario'])])
+        for first in self.scenario[parameter_type].keys():
+            if 'scenario' in list(self.scenario[parameter_type][first].keys()):
+                scenario_parameter.append([first, list(self.scenario[parameter_type][first]['scenario'])])
         return scenario_parameter
 
         

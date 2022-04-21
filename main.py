@@ -54,10 +54,21 @@ simulation_parameters = {'num_sims': num_simulations, 'time_steps' : timesteps, 
 
 my_scenario = Scenario(market_parameters, contract_parameters, calculation_parameters, simulation_parameters)
 
+
+
 strike_space = [0, 25, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500]
 my_scenario.define_scenario(['contract', 'strike', strike_space])
 averaging_space = [AveragingType.ARITHMETIC, AveragingType.GEOMETRIC]
 my_scenario.define_scenario(['contract', 'averaging_type', averaging_space])
+
+
+spot_space = [0, 25, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500]
+my_scenario.define_scenario(['market', 'start_val', spot_space])
+
+
+simulation_space = [10, 100, 1000, 10000, 100000, 1000000, 10000000]
+my_scenario.define_scenario(['simulation', 'num_sims', simulation_space])
+
 
 my_scenario.run_scenarios()
 
