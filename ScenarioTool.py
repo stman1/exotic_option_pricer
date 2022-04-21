@@ -116,6 +116,15 @@ class Scenario:
        
         time_line = linspace(0, self.market['time']['eval'], self.simulation['time_steps']['eval'])
        
+        option = self._instantiate_contract(time_line)
+    
+        num_sims = self.simulation['num_sims']['eval']
+        payoff_type = self.contract['payoff_type']['eval']
+        print(f'Number of MC simulations : {num_sims}')
+        print(f'{payoff_type} by Monte Carlo: {option.call_price:0.4f}, {option.put_price:0.4f}')
+       
+       
+    def _instantiate_contract(self, time_line):
         if self.contract['payoff_type']['eval'] == PayoffType.EUROPEAN:
             option = EuropeanOption(time_line, 
                                      self.asset_paths, 
@@ -141,14 +150,14 @@ class Scenario:
                                      self.contract['strike']['eval'], 
                                      self.market['drift']['eval'], 
                                      self.market['time']['eval'])
-    
-        num_sims = self.simulation['num_sims']['eval']
-        payoff_type = self.contract['payoff_type']['eval']
-        print(f'Number of MC simulations : {num_sims}')
-        print(f'{payoff_type} by Monte Carlo: {option.call_price:0.4f}, {option.put_price:0.4f}')
-       
-       
-
+        else:
+            payoff_type_input = self.contract['payoff_type']['eval']
+            print(f'Contract was not instantiated: contract type {payoff_type_input} unknown.')
+        
+        return option
+            
+        
+        
         
         
         
@@ -168,6 +177,8 @@ class Scenario:
             original_parameter_val = self.contract[contract_scenario[0]]['eval']
             # unwrap scenario
             contract_parameter_space = self.contract[contract_scenario[0]]['scenario']
+            # instantiate contract
+            
             for param in contract_parameter_space:
                 # change parameter in scenario
                 self.contract[contract_scenario[0]]['eval'] = param
