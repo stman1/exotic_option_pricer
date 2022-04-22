@@ -7,24 +7,33 @@ Created on Mon Apr 18 13:07:28 2022
 
 from numpy import *
 from scipy.stats import norm
+from Contracts import StrikeType, OptionType
 
-class BSContinuousLookback:
-    
+class ClosedFormContinuousLookback:
     """
     This is a class for Options contract for pricing European options on stocks without dividends.
     
     Attributes: 
         spot          : int or float
-        strike        : int or float 
+        strike_type   : Enum type
         rate          : float
         dte           : int or float [days to expiration in number of years]
         volatility    : float
+        strike        : int or float
+        running_max   : int or float
+        running_min   : int or float
     """    
     
-    def __init__(self, spot, strike, rate, dte, volatility):
+    def __init__(self, spot, option_type, strike_type, rate, dte, volatility, strike, running_max, running_min):
         
         # Spot Price
         self.spot = spot
+        
+        # Option type, call or put
+        self.opt_type = option_type
+        
+        # Strike type, fixed or floating strike
+        self.st_type = strike_type
         
         # Option Strike
         self.strike = strike
@@ -56,22 +65,83 @@ class BSContinuousLookback:
         '''
         Contains all the attributes defined for the object itself. It maps the attribute name to its value.
         '''
-        for i in ['callPrice', 'putPrice', 'callDelta', 'putDelta', 'callTheta', 'putTheta', \
-                  'callRho', 'putRho', 'vega', 'gamma']:
+        for i in ['callPrice', 'putPrice']:
             self.__dict__[i] = None
         
         [self.callPrice, self.putPrice] = self._price()
-        [self.callDelta, self.putDelta] = self._delta()
-        [self.callTheta, self.putTheta] = self._theta()
-        [self.callRho, self.putRho] = self._rho()
-        self.vega = self._vega()
-        self.gamma = self._gamma()
-        
+
+
+    def _set_d1(min_max_strike):
+        self._d1_ = (log(self.spot / min_max_strike) + (self.rate + 0.5 * self.volatility**2)*self.dte) / (self.volatility * sqrt(self.dte))
+
     
     # Option Price
     def _price(self):
         '''Returns the option price: [Call price, Put price]'''
 
+        if self.volatility == 0 or self.dte == 0:
+            call = maximum(0.0, self.spot - self.strike)
+            put = maximum(0.0, self.strike - self.spot)
+            
+        if self.st_type == StrikeType.FLOATING:
+            
+            if self.opt_type = OptionType.CALL:
+                self._set_d1(self.running_min)
+                
+            elif self.opt_type = OptionType.PUT:
+                self._set_d1(self.running_max)
+                               
+            else:
+                raise TypeError(f'Lookback option type is {self.opt_type} but must be either OptionType.CALL or OptionType.PUT') # raise an exception
+                            
+        elif self.st_type == StrikeType.FIXED:   
+            
+            if self.opt_type = OptionType.CALL:
+                if self.running_max > self.strike:
+                    self._set_d1(self.running_max)
+                    
+                elif self.running_max < self.strike:
+                    self._set_d1(self.strike) 
+                    
+                else:
+                    call = 0 
+                        
+            elif self.opt_type = OptionType.PUT:
+                
+                if self.running_min > self.strike:
+                    self._set_d1(self.strike) 
+                 
+                elif self.running_min < self.strike:
+                    self._set_d1(self.running_max)
+                else:
+                    put = 0    
+                
+            else:
+                raise TypeError(f'Lookback option type is {self.opt_type} but must be either OptionType.CALL or OptionType.PUT') # raise an exception
+            
+        
+        else:
+            raise TypeError(f'Lookback strike type is {self.st_type} but must be either StrikeType.FLOATING or StrikeType.FIXED') # raise an exception
+                
+        # d2 is always the same
+        self._d2_ = self._d1_ - self.volatility * sqrt(self.dte)        
+        
+
+        if self.st_type == StrikeType.FLOATING:
+            
+            call = self.spot * norm.cdf(self._d1_)\
+                - self.running_min * e**(-self.rate * self.dte) * norm.cdf(self._d2_)\
+                    +self.spot * e**(-self.rate * self.dte) * self.volatility**2 / (2*(self.rate))\
+                        * ((self.spot\self.running_min)**(-(2*self.rate/(self.volatility**2)))\
+                           * norm.cdf(-self._d1_ + (2*self.rate*sqrt(self.dte))/(self.volatility)) - e**(self.rate*self.dte) * norm.cdf(-self._d1_)   )
+        elif self.st_type == StrikeType.FIXED: 
+        
+        else:
+            raise TypeError(f'Lookback strike type is {self.st_type} but must be either StrikeType.FLOATING or StrikeType.FIXED') # raise an exception
+                    
+
+        
+            
         if self.volatility == 0 or self.dte == 0:
             call = maximum(0.0, self.spot - self.strike)
             put = maximum(0.0, self.strike - self.spot)
@@ -83,44 +153,4 @@ class BSContinuousLookback:
                                                                         self.spot * norm.cdf(-self._d1_)
         return [call, put]
 
-    # Option Delta
-    def _delta(self):
-        '''Returns the option delta: [Call delta, Put delta]'''
-
-        if self.volatility == 0 or self.dte == 0:
-            call = 1.0 if self.spot > self.strike else 0.0
-            put = -1.0 if self.spot < self.strike else 0.0
-        else:
-            call = norm.cdf(self._d1_)
-            put = -norm.cdf(-self._d1_)
-        return [call, put]
-
-    # Option Gamma
-    def _gamma(self):
-        '''Returns the option gamma'''
-        return norm.pdf(self._d1_) / (self.spot * self._a_)
-
-    # Option Vega
-    def _vega(self):
-        '''Returns the option vega'''
-        if self.volatility == 0 or self.dte == 0:
-            return 0.0
-        else:
-            return self.spot * norm.pdf(self._d1_) * self.dte**0.5 / 100
-
-    # Option Theta
-    def _theta(self):
-        '''Returns the option theta: [Call theta, Put theta]'''
-        call = -self.spot * norm.pdf(self._d1_) * self.volatility / (2 * self.dte**0.5) - self.rate * self.strike * self._b_ * norm.cdf(self._d2_)
-
-        put = -self.spot * norm.pdf(self._d1_) * self.volatility / (2 * self.dte**0.5) + self.rate * self.strike * self._b_ * norm.cdf(-self._d2_)
-        return [call / 365, put / 365]
-
-    # Option Rho
-    def _rho(self):
-        '''Returns the option rho: [Call rho, Put rho]'''
-        call = self.strike * self.dte * self._b_ * norm.cdf(self._d2_) / 100
-        put = -self.strike * self.dte * self._b_ * norm.cdf(-self._d2_) / 100
-
-        return [call, put]
-# Initialize option
+ 
