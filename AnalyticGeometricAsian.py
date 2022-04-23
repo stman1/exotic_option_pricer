@@ -43,8 +43,8 @@ class ClosedFormGeometricAsian:
         self.avg_sample = num_avg_samples
         
         # geometric asian volatility
-        self.vol_asian = self.volatility**2 *\
-            ((self.avg_sample + 1)*(2 * self.avg_sample + 1))/(6 * (self.avg_sample)**2)
+        self.vol_asian = self.volatility *\
+            sqrt(((self.avg_sample + 1)*(2 * self.avg_sample + 1))/(6 * (self.avg_sample)**2))
         
         # geometric asian drift under martingale measure
         self.drift_asian = 0.5 * self.vol_asian + \
@@ -63,23 +63,10 @@ class ClosedFormGeometricAsian:
         
         self._b_ = e**-(self.rate * self.dte)
         
-        
-        # The __dict__ attribute
-        '''
-        Contains all the attributes defined for the object itself. It maps the attribute name to its value.
-        '''
-        for i in ['callPrice', 'putPrice', 'callDelta', 'putDelta', 'callTheta', 'putTheta', \
-                  'callRho', 'putRho', 'vega', 'gamma']:
-            self.__dict__[i] = None
-        
-        [self.callPrice, self.putPrice] = self._price()
-        [self.callDelta, self.putDelta] = self._delta()
-        [self.callTheta, self.putTheta] = self._theta()
-        [self.callRho, self.putRho] = self._rho()
-        self.vega = self._vega()
-        self.gamma = self._gamma()
-        
     
+        [self.call_price, self.put_price] = self._price()
+
+        
     # Option Price
     def _price(self):
         '''Returns the option price: [Call price, Put price]'''
@@ -94,45 +81,3 @@ class ClosedFormGeometricAsian:
             put = self.strike * e**(-self.rate * self.dte) * norm.cdf(-self._d2_) - \
                                                                         self.spot * norm.cdf(-self._d1_)
         return [call, put]
-
-    # Option Delta
-    def _delta(self):
-        '''Returns the option delta: [Call delta, Put delta]'''
-
-        if self.volatility == 0 or self.dte == 0:
-            call = 1.0 if self.spot > self.strike else 0.0
-            put = -1.0 if self.spot < self.strike else 0.0
-        else:
-            call = norm.cdf(self._d1_)
-            put = -norm.cdf(-self._d1_)
-        return [call, put]
-
-    # Option Gamma
-    def _gamma(self):
-        '''Returns the option gamma'''
-        return norm.pdf(self._d1_) / (self.spot * self._a_)
-
-    # Option Vega
-    def _vega(self):
-        '''Returns the option vega'''
-        if self.volatility == 0 or self.dte == 0:
-            return 0.0
-        else:
-            return self.spot * norm.pdf(self._d1_) * self.dte**0.5 / 100
-
-    # Option Theta
-    def _theta(self):
-        '''Returns the option theta: [Call theta, Put theta]'''
-        call = -self.spot * norm.pdf(self._d1_) * self.volatility / (2 * self.dte**0.5) - self.rate * self.strike * self._b_ * norm.cdf(self._d2_)
-
-        put = -self.spot * norm.pdf(self._d1_) * self.volatility / (2 * self.dte**0.5) + self.rate * self.strike * self._b_ * norm.cdf(-self._d2_)
-        return [call / 365, put / 365]
-
-    # Option Rho
-    def _rho(self):
-        '''Returns the option rho: [Call rho, Put rho]'''
-        call = self.strike * self.dte * self._b_ * norm.cdf(self._d2_) / 100
-        put = -self.strike * self.dte * self._b_ * norm.cdf(-self._d2_) / 100
-
-        return [call, put]
-# Initialize option

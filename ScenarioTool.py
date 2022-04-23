@@ -89,14 +89,12 @@ class Scenario:
         
         # check market scenarios
         market_scenarios = self._find_scenario('market')
-        
         for ms in market_scenarios:
             self._run_market_scenario(ms)
         
         # check contract scenarios
         # if contract parameters are present, run them
         contract_scenarios = self._find_scenario('contract')
-        
         for cs in contract_scenarios:
             self._run_contract_scenario(cs)
         

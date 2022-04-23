@@ -53,6 +53,8 @@ class ClosedFormContinuousLookback:
         
         # Volatility
         self.volatility = volatility
+        
+        [self.call_price, self.put_price] = self._price()
                
 
     def _assign_pricing_formula_inputs(self):
@@ -152,6 +154,16 @@ class ClosedFormContinuousLookback:
 
     # Option Price
     def _price(self):
-        pass
+        self.opt_type = OptionType.CALL
+        call = self._template_pricing_formula()
+        
+        self.opt_type = OptionType.PUT
+        put = self._template_pricing_formula()
+        return [call, put]
+    
+    
+    def price(self):
+        self._price()
+        
  
  
