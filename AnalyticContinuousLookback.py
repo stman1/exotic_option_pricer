@@ -61,9 +61,9 @@ class ClosedFormContinuousLookback:
         if self.st_type == StrikeType.FLOATING:
             
             if self.opt_type == OptionType.CALL:
-                values = ['+', '+', '-', 'self.realized_min', '+', '+', '-', '+','-', '']    
+                values = ['+', '+', '-', 'self.realized_min', '+', '+', '-', '+','-', '-','']    
             elif self.opt_type == OptionType.PUT:
-                values = ['-', '-', '+', 'self.realized_max', '-', '-', '+', '-','+', '']              
+                values = ['-', '-', '+', 'self.realized_max', '-', '-', '+', '-','+', '+','']              
             else:
                 values = None
                 # raise an exception
@@ -72,15 +72,15 @@ class ClosedFormContinuousLookback:
         elif self.st_type == StrikeType.FIXED:   
             if self.opt_type == OptionType.CALL:
                 if self.strike >= self.realized_max:
-                    values = ['+', '+', '-', 'self.strike', '+', '-', '+', '-','+', '']
+                    values = ['+', '+', '-', 'self.strike', '+', '-', '+', '-','+','+','']
                 else:
-                    values = ['+', '+', '-', 'self.realized_max', '+', '-', '+', '-','+', '(self.realized_max - self.strike) * e**(-self.rate*self.dte)']  
+                    values = ['+', '+', '-', 'self.realized_max', '+', '-', '+', '-','+', '+','(self.realized_max - self.strike) * e**(-self.rate*self.dte)']  
                 
             elif self.opt_type == OptionType.PUT:
                 if self.strike <= self.realized_min: 
-                    values = ['-', '-', '+', 'self.strike', '-', '+', '-', '+','-', '']
+                    values = ['-', '-', '+', 'self.strike', '-', '+', '-', '+','-', '-','']
                 else:
-                    values = ['-', '-', '+', 'self.realized_min', '-', '+', '-', '+','-', '(self.strike - self.realized_min) * e**(-self.rate*self.dte)']  
+                    values = ['-', '-', '+', 'self.realized_min', '-', '+', '-', '+','-', '-', '(self.strike - self.realized_min) * e**(-self.rate*self.dte)']  
             else:
                 values = None
                 # raise an exception
@@ -106,6 +106,7 @@ class ClosedFormContinuousLookback:
         'sign_d1_3rd',
         'sign_correction_3rd',
         'sign_last',
+        'sign_d1_last',
         'additional_term']
         
         
@@ -135,7 +136,7 @@ class ClosedFormContinuousLookback:
                                           * norm.cdf($sign_d2_2nd self._d2_) +self.spot * e**(-self.rate * self.dte)\
                                           * self.volatility**2 / (2*(self.rate)) * ($sign_3rd (self.spot/$strike)**(-(2*self.rate/(self.volatility**2)))\
                                           * norm.cdf($sign_d1_3rd self._d1_ $sign_correction_3rd (2*self.rate*sqrt(self.dte))/(self.volatility))\
-                                          $sign_last e**(self.rate*self.dte) * norm.cdf(-self._d1_)) ')
+                                          $sign_last e**(self.rate*self.dte) * norm.cdf($sign_d1_last self._d1_)) ')
 
         option = price_formula_template.substitute(sign_spot_1st =  template_input['sign_spot_1st'], 
                                                 sign_d1_1st = template_input['sign_d1_1st'], 
@@ -146,6 +147,7 @@ class ClosedFormContinuousLookback:
                                                 sign_d1_3rd = template_input['sign_d1_3rd'], 
                                                 sign_correction_3rd = template_input['sign_correction_3rd'], 
                                                 sign_last = template_input['sign_last'],
+                                                sign_d1_last = template_input['sign_d1_last'],
                                                 additional_term = template_input['additional_term'])
                             
         

@@ -158,7 +158,7 @@ class LookbackOption:
         tte                     : int or float [time to expiry, expressed as year fraction]
     """ 
     
-    def __init__(self, asset_paths, option_type, strike, rate, tte):
+    def __init__(self, asset_paths, option_type, strike_type, strike, rate, tte):
         # Array of asset paths
         self.s_mat = asset_paths
         
@@ -167,10 +167,7 @@ class LookbackOption:
         
         # Strike type, fixed strike or floating strike
         self.strike_type = strike_type
-        
-        # type of averaging, arithmetic or geometric averaging
-        self.avg_type = averaging_type
-       
+               
         # Strike, in case it is of type fixed strike
         self.strike = strike
         
@@ -195,8 +192,8 @@ class LookbackOption:
 
     def _price(self):
         discount_factor = exp(-self.rate * self.tte)
-        call_price = discount_factor * maximum(maximum(mean(self.s_mat, axis = 0)) - self.strike, 0.)
-        put_price = discount_factor * maximum(self.strike - minimum(mean(self.s_mat, axis = 0)), 0.)
+        call_price = discount_factor * mean(maximum(amax(self.s_mat, axis = 0) - self.strike, 0.))
+        put_price = discount_factor * mean(maximum(self.strike - amin(self.s_mat, axis = 0), 0.))
         return [call_price, put_price]
             
     

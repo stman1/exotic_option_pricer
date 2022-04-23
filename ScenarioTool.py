@@ -20,19 +20,6 @@ class ParameterType(Enum):
     CALCULATION = 4
 
 
-class Parameters:
-    """
-    This is a class encapsulating market and contract parameters.
-    
-    Attributes: 
-
-    """  
-    def __init__(self, market_parameters, contract_parameters):
-        # spot, strike, risk_free_rate, asset_volatility, time_to_expiry
-        pass
-        
-        
-    
 class Scenario:
     
     """
@@ -116,8 +103,7 @@ class Scenario:
         option = self._instantiate_contract()
         num_sims = self.simulation['num_sims']['eval']
         payoff_type = self.contract['payoff_type']['eval']
-        print(f'Number of MC simulations : {num_sims}')
-        print(f'{payoff_type} by Monte Carlo: {option.call_price:0.4f}, {option.put_price:0.4f}')
+        return [option.call_price, option.put_price]
        
        
     def _instantiate_contract(self):
@@ -150,8 +136,7 @@ class Scenario:
         return option
             
         
-        
-        
+           
         
         
     def _run_market_scenario(self, market_scenario):
@@ -163,12 +148,15 @@ class Scenario:
             # unwrap scenario
             market_parameter_space = self.market[market_scenario[0]]['scenario']
 
+            scenario_call = []; scenario_put = []
             for param in market_parameter_space:
                 # generate asset paths
                 self._generate_asset_paths()
                 # change parameter in scenario
                 self.market[market_scenario[0]]['eval'] = param
-                self._run_single_scenario()
+                [call, put] = self._run_single_scenario()
+                scenario_call.append(call)
+                scenario_put.append(put)
                 
             # reset state of the object    
             self.market[market_scenario[0]]['eval'] = original_parameter_val
@@ -176,6 +164,8 @@ class Scenario:
             # reset state of the object    
             self.market[market_scenario[0]]['eval'] = original_parameter_val
             market_parameter_space = 'null'
+            
+        return scenario_call, scenario_put
         
     
     def _run_simulation_scenario(self, simulation_scenario):
@@ -187,12 +177,15 @@ class Scenario:
             # unwrap scenario
             simulation_parameter_space = self.simulation[simulation_scenario[0]]['scenario']
 
+            scenario_call = []; scenario_put = []
             for param in simulation_parameter_space:
                 # generate asset paths
                 self._generate_asset_paths()
                 # change parameter in scenario
                 self.simulation[simulation_scenario[0]]['eval'] = param
-                self._run_single_scenario()
+                [call, put] = self._run_single_scenario()
+                scenario_call.append(call)
+                scenario_put.append(put)
                 
             # reset state of the object    
             self.simulation[simulation_scenario[0]]['eval'] = original_parameter_val
@@ -200,6 +193,8 @@ class Scenario:
             # reset state of the object    
             self.simulation[simulation_scenario[0]]['eval'] = original_parameter_val
             simulation_parameter_space = 'null'
+            
+        return scenario_call, scenario_put
     
     
     def _run_contract_scenario(self, contract_scenario):
@@ -213,11 +208,13 @@ class Scenario:
             # generate asset paths
             self._generate_asset_paths()
             # instantiate contract
-            
+            scenario_call = []; scenario_put = []
             for param in contract_parameter_space:
                 # change parameter in scenario
                 self.contract[contract_scenario[0]]['eval'] = param
-                self._run_single_scenario()
+                [call, put] = self._run_single_scenario()
+                scenario_call.append(call)
+                scenario_put.append(put)
                 
             # reset state of the object    
             self.contract[contract_scenario[0]]['eval'] = original_parameter_val
@@ -225,6 +222,8 @@ class Scenario:
             # reset state of the object    
             self.contract[contract_scenario[0]]['eval'] = original_parameter_val
             contract_parameter_space = 'null'
+            
+        return scenario_call, scenario_put
         
     
     def _run_calculation_scenario(self):
