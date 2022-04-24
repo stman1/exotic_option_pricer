@@ -51,6 +51,94 @@ timesteps = 252
 antithetic_flag = True
 
 
+spot_space = [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
+vol_space = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05, 0.01]#, 0.001]
+
+results = np.zeros((2, 2, len(spot_space), len(vol_space)))
+for sp_idx, sp in enumerate(spot_space, 0):
+    for v_idx, v in enumerate(vol_space, 0):
+        # generate asset paths
+        asset_paths = simulate_path(sp, risk_free_rate, v, time_horizon, timesteps, num_simulations, antithetic_flag)
+        
+        my_mc_lookback = LookbackOption(asset_paths, OptionType.CALL, StrikeType.FIXED, strike_price, risk_free_rate, time_horizon)
+        my_cf_lookback = ClosedFormContinuousLookback(sp, OptionType.CALL, StrikeType.FIXED, risk_free_rate, time_horizon, v, strike_price, sp, sp)
+        results[0, 0, sp_idx, v_idx] = my_mc_lookback.call_price
+        results[1, 0, sp_idx, v_idx] = my_mc_lookback.put_price
+        results[0, 1, sp_idx, v_idx] = my_cf_lookback.call_price
+        results[1, 1, sp_idx, v_idx] = my_cf_lookback.put_price
+
+
+mc_call_rmse = np.sqrt(np.sum(np.sum(np.power(results[0][0] - results[0][1], 2), axis = 0)))
+mc_put_rmse = np.sqrt(np.sum(np.sum(np.power(results[1][0] - results[1][1], 2), axis = 0)))
+
+print(f'Lookback option call and put root mean squared error: {mc_call_rmse:0.4f}, {mc_put_rmse:0.4f}')
+
+# Visualize
+
+figure, axes = plt.subplots(1,2, figsize=(20,6), sharey=True)
+
+x = spot_space
+d = {'80%':0.8, '70%': 0.7, '60%': 0.6, '50%': 0.5, '40%': 0.4, '30%' : 0.3, '20%' : 0.2, '10%' : 0.1, '5%' : 0.05, '1%' : 0.01, '0.1%' : 0.001}
+
+for i in range(0, len(vol_space)):
+    axes[0].plot(spot_space, results[0][0][:, i], label=vol_space[i])
+    axes[1].plot(spot_space, results[0][1][:, i], label=vol_space[i])
+    
+# Set axis title
+axes[0].set_title('Fixed Strike Call Price (Monte Carlo)'), axes[1].set_title('Fixed Strike Call Price (Closed Form)')
+
+# Define legend
+axes[0].legend(), axes[1].legend()
+
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #asset_paths = simulate_path(spot_price, risk_free_rate, asset_volatility, time_horizon, timesteps, num_simulations, antithetic_flag)
 
 #my_lookback = LookbackOption(asset_paths, OptionType.CALL, StrikeType.FLOATING, strike_price, risk_free_rate, time_horizon)
@@ -58,7 +146,8 @@ antithetic_flag = True
 
 #res = test_martingale_property_asset_price_path_repeated(spot_price, risk_free_rate, asset_volatility, timesteps, antithetic_flag, 10)
 
-test_closed_form_solutions(spot_price, strike_price, risk_free_rate, time_horizon, asset_volatility, timesteps)
+#test_closed_form_solutions(spot_price, strike_price, risk_free_rate, time_horizon, asset_volatility, timesteps)
+
 
 #test_monte_carlo_payoffs(spot_price, strike_price, risk_free_rate, time_horizon, asset_volatility, timesteps, num_simulations, antithetic_flag)
 

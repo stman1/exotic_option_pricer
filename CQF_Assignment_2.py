@@ -238,7 +238,7 @@ def test_monte_carlo_payoffs(spot_price, strike_price, risk_free_rate, time_hori
             
             my_asian = AsianOption(asset_paths, OptionType.CALL, StrikeType.FIXED, AveragingType.GEOMETRIC, strike_price, risk_free_rate, ts)
             my_european = EuropeanOption(asset_paths, OptionType.CALL, strike_price, risk_free_rate, ts)
-            my_lookback = LookbackOption(asset_paths, OptionType.CALL, StrikeType.FIXED, strike_price, risk_free_rate, ts)
+            my_lookback = LookbackOption(asset_paths, OptionType.CALL, StrikeType.FLOATING, strike_price, risk_free_rate, ts)
                 
             results[0, 0, sp_idx, ts_idx] = my_european.call_price
             results[1, 0, sp_idx, ts_idx] = my_asian.call_price
