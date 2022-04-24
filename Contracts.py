@@ -166,7 +166,7 @@ class LookbackOption:
         self.opt_type = option_type
         
         # Strike type, fixed strike or floating strike
-        self.strike_type = strike_type
+        self.st_type = strike_type
                
         # Strike, in case it is of type fixed strike
         self.strike = strike
@@ -175,6 +175,7 @@ class LookbackOption:
         self.rate = rate
         
         # time to expiration (year fraction)
+        
         self.tte = tte
         
 
@@ -184,16 +185,21 @@ class LookbackOption:
         '''
         Contains all the attributes defined for the object itself. It maps the attribute name to its value.
         '''
-        for i in ['callPrice', 'putPrice', 'callDelta', 'putDelta', 'callTheta', 'putTheta', \
-                  'callRho', 'putRho', 'vega', 'gamma']:
+        for i in ['call_price', 'put_price']:
             self.__dict__[i] = None
         
         [self.call_price, self.put_price] = self._price()
 
     def _price(self):
-        discount_factor = exp(-self.rate * self.tte)
-        call_price = discount_factor * mean(maximum(amax(self.s_mat, axis = 0) - self.strike, 0.))
-        put_price = discount_factor * mean(maximum(self.strike - amin(self.s_mat, axis = 0), 0.))
+        discount_factor = exp(-self.rate * self.tte)    
+        if self.st_type == StrikeType.FLOATING:
+            call_price = discount_factor * mean(self.s_mat[-1] - amin(self.s_mat, axis = 0))
+            put_price = discount_factor *mean(amax(self.s_mat, axis = 0) - self.s_mat[-1])
+        elif  self.st_type == StrikeType.FIXED:
+            call_price = discount_factor * mean(maximum(amax(self.s_mat, axis = 0) - self.strike, 0.))
+            put_price = discount_factor * mean(maximum(self.strike - amin(self.s_mat, axis = 0), 0.))
+        else:
+            call_price = 0; put_price = 0
         return [call_price, put_price]
             
     

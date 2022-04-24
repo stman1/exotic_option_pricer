@@ -30,21 +30,12 @@ class ClosedFormContinuousLookback:
         # Spot Price
         self.spot = spot
         
-        # largest asset value observed since contract outset
-        self.realized_max = realized_max
-        
-        # smallest asset value observed since contract outset
-        self.realized_min = realized_min
-        
         # Option type, call or put
         self.opt_type = option_type
         
         # Strike type, fixed or floating strike
         self.st_type = strike_type
-        
-        # Option Strike
-        self.strike = strike
-        
+                
         # Interest Rate
         self.rate = rate
         
@@ -53,6 +44,15 @@ class ClosedFormContinuousLookback:
         
         # Volatility
         self.volatility = volatility
+        
+        # Option Strike
+        self.strike = strike
+        
+        # largest asset value observed since contract outset
+        self.realized_max = realized_max
+        
+        # smallest asset value observed since contract outset
+        self.realized_min = realized_min
         
         [self.call_price, self.put_price] = self._price()
                

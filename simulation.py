@@ -46,7 +46,7 @@ def simulate_path(s0, mu, sigma, horizon, timesteps, n_sims, antithetic):
     
     # Set the random seed for reproducibility
     # Same seed leads to the same set of random values
-    np.random.seed(10000) 
+    #np.random.seed(10000) 
 
     # Read parameters
     S0 = s0             # initial spot level
@@ -69,7 +69,7 @@ def simulate_path(s0, mu, sigma, horizon, timesteps, n_sims, antithetic):
         else:
             w = np.random.standard_normal(n)                                                         
         S[i+1] = S[i] * (1 + r * dt + sigma * np.sqrt(dt) * w)               # vectorized operation per timesteps
-        # S[i+1] = S[i] * exp((r - 0.5 * sigma ** 2) * dt + sigma * sqrt(dt) * w)  # alternate form
+        #S[i+1] = S[i] * np.exp((r - 0.5 * sigma ** 2) * dt + sigma * np.sqrt(dt) * w)  # alternate form
         
     return S
 

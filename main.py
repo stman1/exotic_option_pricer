@@ -16,7 +16,7 @@ from AnalyticGeometricAsian import ClosedFormGeometricAsian
 from AnalyticContinuousLookback import ClosedFormContinuousLookback
 from Contracts import AsianOption, LookbackOption, EuropeanOption, PayoffType, OptionType, AveragingType, StrikeType
 from ScenarioTool import Scenario
-from CQF_Assignment_2 import test_martingale_property_asset_price_path, test_euler_maruyama, test_closed_form_solutions, test_monte_carlo_payoffs
+from CQF_Assignment_2 import test_martingale_property_asset_price_path, test_martingale_property_asset_price_path_repeated, test_euler_maruyama, test_closed_form_solutions, test_monte_carlo_payoffs
 
 import matplotlib
 from matplotlib import cm
@@ -50,9 +50,17 @@ num_simulations = 100000
 timesteps = 252 
 antithetic_flag = True
 
+
+#asset_paths = simulate_path(spot_price, risk_free_rate, asset_volatility, time_horizon, timesteps, num_simulations, antithetic_flag)
+
+#my_lookback = LookbackOption(asset_paths, OptionType.CALL, StrikeType.FLOATING, strike_price, risk_free_rate, time_horizon)
+#print(f'MC Lookback option call and put price: {my_lookback.call_price:0.4f}, {my_lookback.put_price:0.4f}')
+
+#res = test_martingale_property_asset_price_path_repeated(spot_price, risk_free_rate, asset_volatility, timesteps, antithetic_flag, 10)
+
 test_closed_form_solutions(spot_price, strike_price, risk_free_rate, time_horizon, asset_volatility, timesteps)
 
-test_monte_carlo_payoffs(spot_price, strike_price, risk_free_rate, time_horizon, asset_volatility, timesteps, num_simulations, antithetic_flag)
+#test_monte_carlo_payoffs(spot_price, strike_price, risk_free_rate, time_horizon, asset_volatility, timesteps, num_simulations, antithetic_flag)
 
 #ig = plt.figure()
 #ax = fig.add_subplot(111, projection='3d')
