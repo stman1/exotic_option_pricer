@@ -323,6 +323,76 @@ def test_monte_carlo_payoffs(spot_price, strike_price, risk_free_rate, time_hori
 
     plt.show()
     
+                    
+def test_lookback_payoff(vol_or_time_flag, option_type, strike_type, spot_price, strike_price, risk_free_rate, time_horizon, asset_volatility, timesteps, num_simulations, antithetic_flag):
+    spot_space = [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
     
-def test_asian_payoff():
-    pass
+    if vol_or_time_flag:
+        # vol space
+        space_2nd = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05, 0.01]
+    else:
+        space_2nd = [1, 0.5, 0.25, 0.166, 0.0833, 0.027777, 0.00396825]
+    
+
+    option_prices = np.zeros((2, 2, len(spot_space), len(space_2nd)))
+    for sp_idx, sp in enumerate(spot_space, 0):
+        for s2_idx, s2 in enumerate(space_2nd, 0):
+
+            if vol_or_time_flag:
+                asset_paths = simulate_path(sp, risk_free_rate, s2, time_horizon, timesteps, num_simulations, antithetic_flag)
+                my_cf_lookback = ClosedFormContinuousLookback(sp, option_type, strike_type, risk_free_rate, time_horizon, s2, strike_price, sp, sp)
+                
+            else:
+                asset_paths = simulate_path(sp, risk_free_rate, asset_volatility, s2, timesteps, num_simulations, antithetic_flag)
+                my_cf_lookback = ClosedFormContinuousLookback(sp, option_type, strike_type, risk_free_rate, s2, asset_volatility, strike_price, sp, sp)
+
+         
+            my_mc_lookback = LookbackOption(asset_paths, option_type, strike_type, strike_price, risk_free_rate, time_horizon)
+            
+            option_prices[0, 0, sp_idx, s2_idx] = my_mc_lookback.call_price
+            option_prices[1, 0, sp_idx, s2_idx] = my_mc_lookback.put_price
+            option_prices[0, 1, sp_idx, s2_idx] = my_cf_lookback.call_price
+            option_prices[1, 1, sp_idx, s2_idx] = my_cf_lookback.put_price
+
+
+    prices_grid_mc_call = option_prices[0][0]
+    prices_grid_cf_call = option_prices[0][1]
+    prices_grid_mc_put = option_prices[1][0]
+    prices_grid_cf_put = option_prices[1][1]
+        
+        
+    call_rmse = np.sqrt(np.sum(np.sum(np.power(prices_grid_mc_call - prices_grid_cf_call, 2), axis = 0)))
+    put_rmse = np.sqrt(np.sum(np.sum(np.power(prices_grid_mc_put - prices_grid_cf_put, 2), axis = 0)))    
+    
+    # print(f'Lookback option call and put root mean squared error: {mc_call_rmse:0.4f}, {mc_put_rmse:0.4f}')
+
+    return option_prices, call_rmse, put_rmse, spot_space, space_2nd     
+
+
+def visualize_payoff(vol_or_time_flag, option_type, strike_type, x_var, y_var, z_var):
+
+    # Visualize
+
+    figure, axes = plt.subplots(1,2, figsize=(20,6), sharey=True)
+    
+    if vol_or_time_flag:
+        d = {'80%':0.8, '70%': 0.7, '60%': 0.6, '50%': 0.5, '40%': 0.4, '30%' : 0.3, '20%' : 0.2, '10%' : 0.1, '5%' : 0.05, '1%' : 0.01, '0.1%' : 0.001}
+    else:
+        d = {'1Y':1, '6M': 0.5, '4M': 0.25, '2M': 0.166, '1M': 0.0833, '1W' : 0.0277777, '1D' : 0.00396825}
+        
+    if option_type == OptionType.CALL:
+        opt_idx = 0
+    else:
+        opt_idx = 1
+        
+    for idx, i in enumerate(y_var):
+        axes[0].plot(x_var, z_var[opt_idx][0][:, idx], label=list(d.keys())[idx])
+        axes[1].plot(x_var, z_var[opt_idx][1][:, idx], label=list(d.keys())[idx])
+        
+    # Set axis title
+    axes[0].set_title(f'{strike_type.name}-strike {option_type.name} price (Monte Carlo)'), axes[1].set_title(f'{strike_type.name}-strike {option_type.name} price (Closed Form)')
+
+    # Define legend
+    axes[0].legend(), axes[1].legend()
+    plt.show()
+
