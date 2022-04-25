@@ -53,12 +53,12 @@ time_horizon = 1
 strike_price = 100 
 
 #simulation parameters
-num_simulations = 1000
+num_simulations = 100000
 timesteps = 252 
 antithetic_flag = True
 
 # Vol = True, time = False
-vol_or_time_flag = True
+vol_or_time_flag = False
 
 # Call = True, Put = False
 
@@ -66,16 +66,16 @@ option_type = OptionType.CALL
 strike_type = StrikeType.FLOATING
 
 option_prices, call_rmse, put_rmse, x_var, y_var = test_lookback_payoff(vol_or_time_flag, 
-                                                             option_type,
-                                                             strike_type,
-                                                             spot_price, 
-                                                             strike_price, 
-                                                             risk_free_rate, 
-                                                             time_horizon, 
-                                                             asset_volatility, 
-                                                             timesteps, 
-                                                             num_simulations, 
-                                                             antithetic_flag)
+                                                                         option_type,
+                                                                         strike_type,
+                                                                         spot_price, 
+                                                                         strike_price, 
+                                                                         risk_free_rate, 
+                                                                         time_horizon, 
+                                                                         asset_volatility, 
+                                                                         timesteps, 
+                                                                         num_simulations, 
+                                                                         antithetic_flag)
 
 
 visualize_payoff(vol_or_time_flag, 
