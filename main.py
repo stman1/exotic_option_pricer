@@ -21,7 +21,8 @@ test_martingale_property_asset_price_path_repeated,
 test_euler_maruyama, 
 test_closed_form_solutions, 
 test_monte_carlo_payoffs,
-test_lookback_payoff, 
+test_lookback_payoff,
+test_asian_payoff, 
 visualize_payoff)
 
 
@@ -85,6 +86,20 @@ visualize_payoff(vol_or_time_flag,
                  y_var, 
                  option_prices)
 
+
+test_asian_payoff(vol_or_time_flag, 
+                 option_type, 
+                 strike_type, 
+                 averaging_type, 
+                 spot_price, 
+                 strike_price, 
+                 risk_free_rate, 
+                 time_horizon, 
+                 asset_volatility, 
+                 timesteps, 
+                 num_simulations, 
+                 antithetic_flag)
+    
 
 #asset_paths = simulate_path(spot_price, risk_free_rate, asset_volatility, time_horizon, timesteps, num_simulations, antithetic_flag)
 
