@@ -323,6 +323,38 @@ def test_monte_carlo_payoffs(spot_price, strike_price, risk_free_rate, time_hori
 
     plt.show()
     
+
+def test_european_payoff(option_type, strike_price, risk_free_rate, asset_volatility, timesteps, num_simulations, antithetic_flag):
+    spot_space = [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
+    time_space = [1, 0.5, 0.25, 0.166, 0.0833, 0.027777, 0.00396825]
+
+
+    option_prices = np.zeros((2, 2, len(spot_space), len(time_space)))
+    for sp_idx, sp in enumerate(spot_space, 0):
+        for ts_idx, ts in enumerate(time_space, 0):
+            asset_paths = simulate_path(sp, risk_free_rate, asset_volatility, ts, timesteps, num_simulations, antithetic_flag)
+            my_bs = BS(sp, strike_price, risk_free_rate, ts, asset_volatility)
+
+            my_mc_european = EuropeanOption(asset_paths, option_type, strike_price, risk_free_rate, ts)
+            
+            option_prices[0, 0, sp_idx, ts_idx] = my_mc_european.call_price
+            option_prices[1, 0, sp_idx, ts_idx] = my_mc_european.put_price
+            option_prices[0, 1, sp_idx, ts_idx] = my_bs.call_price
+            option_prices[1, 1, sp_idx, ts_idx] = my_bs.put_price
+
+
+    prices_grid_mc_call = option_prices[0][0]
+    prices_grid_cf_call = option_prices[0][1]
+    prices_grid_mc_put = option_prices[1][0]
+    prices_grid_cf_put = option_prices[1][1]
+        
+        
+    call_rmse = np.sqrt(np.sum(np.sum(np.power(prices_grid_mc_call - prices_grid_cf_call, 2), axis = 0)))
+    put_rmse = np.sqrt(np.sum(np.sum(np.power(prices_grid_mc_put - prices_grid_cf_put, 2), axis = 0)))    
+    
+    return option_prices, call_rmse, put_rmse, spot_space, time_space 
+
+
                     
 def test_lookback_payoff(vol_or_time_flag, option_type, strike_type, spot_price, strike_price, risk_free_rate, time_horizon, asset_volatility, timesteps, num_simulations, antithetic_flag):
     spot_space = [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
