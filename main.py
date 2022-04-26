@@ -65,10 +65,24 @@ vol_or_time_flag = False
 
 option_type = OptionType.CALL
 strike_type = StrikeType.FLOATING
+averaging_type = AveragingType.GEOMETRIC
 
-option_prices, call_rmse, put_rmse, x_var, y_var = test_lookback_payoff(vol_or_time_flag, 
-                                                                         option_type,
-                                                                         strike_type,
+# option_prices, call_rmse, put_rmse, x_var, y_var = test_lookback_payoff(vol_or_time_flag, 
+#                                                                          option_type,
+#                                                                          strike_type,
+#                                                                          spot_price, 
+#                                                                          strike_price, 
+#                                                                          risk_free_rate, 
+#                                                                          time_horizon, 
+#                                                                          asset_volatility, 
+#                                                                          timesteps, 
+#                                                                          num_simulations, 
+#                                                                          antithetic_flag)
+
+option_prices, call_rmse, put_rmse, x_var, y_var  = test_asian_payoff(vol_or_time_flag, 
+                                                                         option_type, 
+                                                                         strike_type, 
+                                                                         averaging_type, 
                                                                          spot_price, 
                                                                          strike_price, 
                                                                          risk_free_rate, 
@@ -78,27 +92,33 @@ option_prices, call_rmse, put_rmse, x_var, y_var = test_lookback_payoff(vol_or_t
                                                                          num_simulations, 
                                                                          antithetic_flag)
 
+z_var = option_prices
 
-visualize_payoff(vol_or_time_flag, 
-                 option_type, 
-                 strike_type, 
-                 x_var, 
-                 y_var, 
-                 option_prices)
+if vol_or_time_flag:
+    d = {'80%':0.8, '70%': 0.7, '60%': 0.6, '50%': 0.5, '40%': 0.4, '30%' : 0.3, '20%' : 0.2, '10%' : 0.1, '5%' : 0.05, '1%' : 0.01, '0.1%' : 0.001}
+else:
+    d = {'1Y':1, '6M': 0.5, '4M': 0.25, '2M': 0.166, '1M': 0.0833, '1W' : 0.0277777, '1D' : 0.00396825}
+    
+if option_type == OptionType.CALL:
+    opt_idx = 0
+else:
+    opt_idx = 1
+    
+for idx, i in enumerate(y_var):
+    plt.plot(x_var, z_var[opt_idx][0][:, idx], label=list(d.keys())[idx])
+    
+# Set axis title
+plt.title(f'{strike_type.name}-strike {option_type.name} price (Monte Carlo)')
 
+plt.legend()
+plt.show()
 
-test_asian_payoff(vol_or_time_flag, 
-                 option_type, 
-                 strike_type, 
-                 averaging_type, 
-                 spot_price, 
-                 strike_price, 
-                 risk_free_rate, 
-                 time_horizon, 
-                 asset_volatility, 
-                 timesteps, 
-                 num_simulations, 
-                 antithetic_flag)
+# visualize_payoff(vol_or_time_flag, 
+#                  option_type, 
+#                  strike_type, 
+#                  x_var, 
+#                  y_var, 
+#                  option_prices)
     
 
 #asset_paths = simulate_path(spot_price, risk_free_rate, asset_volatility, time_horizon, timesteps, num_simulations, antithetic_flag)

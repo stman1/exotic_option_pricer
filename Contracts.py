@@ -128,9 +128,17 @@ class AsianOption:
         [self.call_price, self.put_price] = self._price()
 
     def _price(self):
+        
         discount_factor = exp(-self.rate * self.tte)
-        call_price = discount_factor * mean(maximum(self.avg - self.strike, 0.))
-        put_price = discount_factor * mean(maximum(self.strike - self.avg, 0.))
+        if self.strike_type == StrikeType.FIXED:
+            call_price = discount_factor * mean(maximum(self.avg - self.strike, 0.))
+            put_price = discount_factor * mean(maximum(self.strike - self.avg, 0.))
+        elif self.strike_type  == StrikeType.FLOATING:
+            call_price = discount_factor * mean(maximum(self.s_mat[-1] - self.avg, 0.))
+            put_price = discount_factor * mean(maximum(self.avg - self.s_mat[-1], 0.))
+        else:
+            raise TypeError(f'{self.strike_type}: strike type must be either FIXED or FLOATING.')
+                    
         return [call_price, put_price]
             
     
