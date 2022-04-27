@@ -24,7 +24,9 @@ test_monte_carlo_payoffs,
 test_lookback_payoff,
 test_asian_payoff,
 test_european_payoff, 
-visualize_payoff)
+visualize_line_plot,
+visualize_grid_plot,
+root_mean_squared_error)
 
 
 import matplotlib
@@ -55,8 +57,8 @@ time_horizon = 1
 strike_price = 100 
 
 #simulation parameters
-num_simulations = 10000
-timesteps = 252 
+num_simulations = 1000000
+timesteps = 2016 
 antithetic_flag = True
 
 # Vol = True, time = False
@@ -65,26 +67,70 @@ vol_or_time_flag = False
 # Call = True, Put = False
 
 option_type = OptionType.CALL
-strike_type = StrikeType.FLOATING
+strike_type = StrikeType.FIXED
 averaging_type = AveragingType.GEOMETRIC
 
+spot_space = [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
+time_space = [1, 0.5, 0.25, 0.166, 0.0833, 0.027777, 0.00396825]
 
-opt_price_array = []
-call_rmse_array = np.zeros((4, 4))
-put_rmse_array = np.zeros((4, 4))
+mc_option_prices = test_monte_carlo_payoffs(spot_space,
+                                          time_space,
+                                          option_type,
+                                          strike_type,
+                                          averaging_type,
+                                          spot_price, 
+                                          strike_price, 
+                                          risk_free_rate,
+                                          time_horizon, 
+                                          asset_volatility, 
+                                          timesteps, 
+                                          num_simulations, 
+                                          antithetic_flag)
 
-for n_idx, n in enumerate([1000, 10000, 100000, 1000000]):
-    for ts_idx, ts in enumerate([252, 504, 756, 1008]):
-        option_prices, call_rmse, put_rmse, x_var, y_var = test_european_payoff(option_type, 
-                                                                                strike_price, 
-                                                                                risk_free_rate, 
-                                                                                asset_volatility, 
-                                                                                ts, 
-                                                                                n, 
-                                                                                antithetic_flag)
-        opt_price_array.append(option_prices)
-        call_rmse_array[n_idx][ts_idx] = call_rmse
-        put_rmse_array[n_idx][ts_idx] = put_rmse
+#visualize_grid_plot(mc_option_prices, spot_space, time_space)
+
+
+cf_option_prices = test_closed_form_solutions(spot_space,
+                                              time_space,
+                                              option_type,
+                                              strike_type,
+                                              averaging_type,
+                                              spot_price, 
+                                              strike_price, 
+                                              risk_free_rate, 
+                                              time_horizon, 
+                                              asset_volatility, 
+                                              timesteps)
+
+
+#visualize_grid_plot(cf_option_prices, spot_space, time_space)
+
+mc_asian_prices = mc_option_prices[1]; cf_asian_prices = cf_option_prices[1]
+mc_lookback_prices = mc_option_prices[2]; cf_lookback_prices = cf_option_prices[2]
+
+call_rmse_asian, put_rmse_asian = root_mean_squared_error(mc_asian_prices, cf_asian_prices)
+call_rmse_lookback, put_rmse_lookback = root_mean_squared_error(mc_lookback_prices, cf_lookback_prices)  
+
+print(f'Asian option rmse call:   {call_rmse_asian:0.4f}, put:   {put_rmse_asian:0.4f}')
+print(f'Lookback option rmse call:   {call_rmse_lookback:0.4f}, put:   {put_rmse_lookback:0.4f}')
+
+
+# opt_price_array = []
+# call_rmse_array = np.zeros((4, 4))
+# put_rmse_array = np.zeros((4, 4))
+
+# for n_idx, n in enumerate([1000, 10000, 100000, 1000000]):
+#     for ts_idx, ts in enumerate([252, 504, 756, 1008]):
+#         option_prices, call_rmse, put_rmse, x_var, y_var = test_european_payoff(option_type, 
+#                                                                                 strike_price, 
+#                                                                                 risk_free_rate, 
+#                                                                                 asset_volatility, 
+#                                                                                 ts, 
+#                                                                                 n, 
+#                                                                                 antithetic_flag)
+#         opt_price_array.append(option_prices)
+#         call_rmse_array[n_idx][ts_idx] = call_rmse
+#         put_rmse_array[n_idx][ts_idx] = put_rmse
 
 
 
