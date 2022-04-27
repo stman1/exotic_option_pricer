@@ -26,15 +26,15 @@ def test_martingale_property_asset_price_path(s0, drift, vol, timesteps, antithe
     
     horizons = [0.1, 0.5, 1, 5, 10] # in years
     
-    res = []    
+    convergence_table = []    
     for n in n_sims:
         new_num_sim_list = []
         for h in horizons:
             asset_paths = simulate_path(s0, drift, vol, h, int(timesteps * h), n, antithetic)
             expected_asset_price = exp(-drift * h) * mean(asset_paths[-1])
             new_num_sim_list.append(expected_asset_price)
-        res.append(new_num_sim_list)
-    return res
+        convergence_table.append(new_num_sim_list)
+    return convergence_table
 
 def test_martingale_property_asset_price_path_repeated(s0, drift, vol, timesteps, antithetic, n_reps):
     
@@ -53,8 +53,7 @@ def test_martingale_property_asset_price_path_repeated(s0, drift, vol, timesteps
     return aggregator_array/n_reps
 
 
-def test_euler_maruyama(s0, strike, drift, vol, time_to_expiry, timesteps, antithetic, vol_flag, ts_flag):
-    n_sims = 100000
+def test_euler_maruyama(s0, strike, drift, vol, time_to_expiry, timesteps, n_sims, antithetic, vol_flag):
     
     vol_s = [v/100 for v in range(1, 83, 3)]
     strike_s = [st for st in range(25, 525, 25)]
@@ -75,11 +74,11 @@ def test_euler_maruyama(s0, strike, drift, vol, time_to_expiry, timesteps, antit
             bsput =  my_bs._price()[1]; mcput =  my_mc.put_price
             vol_res.append([v, bscall, mccall, bscall - mccall, bsput, mcput, bsput - mcput])
     
-        vol_frame = pd.DataFrame(vol_res)
-        vol_frame.columns = vol_frame.iloc[0]
-        vol_frame = vol_frame[1:] 
+        frame = pd.DataFrame(vol_res)
+        frame.columns = frame.iloc[0]
+        frame = frame[1:] 
     
-    if (ts_flag):
+    else:
         ts_vol = 0.2
         my_bs.volatility = ts_vol
         
@@ -91,12 +90,12 @@ def test_euler_maruyama(s0, strike, drift, vol, time_to_expiry, timesteps, antit
             bsput =  my_bs._price()[1]; mcput =  my_mc.put_price
             ts_res.append([ts, bscall, mccall, bscall - mccall, bsput, mcput, bsput - mcput])
     
-        ts_frame = pd.DataFrame(ts_res)
-        ts_frame.columns = ts_frame.iloc[0]
-        ts_frame = ts_frame[1:] 
+        frame = pd.DataFrame(ts_res)
+        frame.columns = frame.iloc[0]
+        frame = frame[1:] 
     
     
-    return ts_frame
+    return frame
     
 
 def test_closed_form_solutions(spot_space,
@@ -111,18 +110,6 @@ def test_closed_form_solutions(spot_space,
                                asset_volatility, 
                                timesteps):
     
-    # Closed-form Asian option
-    #my_geometric_asian = ClosedFormGeometricAsian(spot_price, strike_price, risk_free_rate, time_horizon, asset_volatility, timesteps)
-    #print(f'Geometric Asian option call and put price: {my_geometric_asian.call_price:0.4f}, {my_geometric_asian.put_price:0.4f}')
-
-    # Black-Scholes formula
-    #my_black_scholes = BS(spot_price, strike_price, risk_free_rate, time_horizon, asset_volatility)
-    #print(f'Black-Scholes option call and put price: {my_black_scholes.call_price:0.4f}, {my_black_scholes.put_price:0.4f}')
-
-    # Closed-form Lookback option
-    #my_lookback = ClosedFormContinuousLookback(spot_price, option_type, strike_type, risk_free_rate, time_horizon, asset_volatility, strike_price, spot_price, spot_price)
-    #print(f'Lookback option call and put price: {my_lookback.call_price:0.4f}, {my_lookback.put_price:0.4f}')
-
     option_prices = np.zeros((3, 2, len(spot_space), len(time_space)))
     for sp_idx, sp in enumerate(spot_space, 0):
         for ts_idx, ts in enumerate(time_space, 0):
@@ -159,18 +146,6 @@ def test_monte_carlo_payoffs(spot_space,
 
     # generate asset paths
     asset_paths = simulate_path(spot_price, risk_free_rate, asset_volatility, time_horizon, timesteps, num_sims, antithetic)
-
-    # Monte Carlo Asian option
-    #my_asian = AsianOption(asset_paths, option_type, strike_type, averaging_type, strike_price, risk_free_rate, time_horizon)
-    #print(f'MC Geometric Asian option call and put price: {my_asian.call_price:0.4f}, {my_asian.put_price:0.4f}')
-
-    # Monte Carlo European Option
-    #my_european = EuropeanOption(asset_paths, option_type, strike_price, risk_free_rate, time_horizon)
-    #print(f'MC European call and put price: {my_european.call_price:0.4f}, {my_european.put_price:0.4f}')
-
-    # Monte Carlo Lookback option
-    #my_lookback = LookbackOption(asset_paths, option_type, strike_type, strike_price, risk_free_rate, time_horizon)
-    #print(f'MC Lookback option call and put price: {my_lookback.call_price:0.4f}, {my_lookback.put_price:0.4f}')
 
     option_prices = np.zeros((3, 2, len(spot_space), len(time_space)))
     for sp_idx, sp in enumerate(spot_space, 0):

@@ -57,8 +57,8 @@ time_horizon = 1
 strike_price = 100 
 
 #simulation parameters
-num_simulations = 1000000
-timesteps = 2016 
+num_simulations = 1000
+timesteps = 756 
 antithetic_flag = True
 
 # Vol = True, time = False
@@ -73,52 +73,44 @@ averaging_type = AveragingType.GEOMETRIC
 spot_space = [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
 time_space = [1, 0.5, 0.25, 0.166, 0.0833, 0.027777, 0.00396825]
 
-mc_option_prices = test_monte_carlo_payoffs(spot_space,
-                                          time_space,
-                                          option_type,
-                                          strike_type,
-                                          averaging_type,
-                                          spot_price, 
-                                          strike_price, 
-                                          risk_free_rate,
-                                          time_horizon, 
-                                          asset_volatility, 
-                                          timesteps, 
-                                          num_simulations, 
-                                          antithetic_flag)
 
-#visualize_grid_plot(mc_option_prices, spot_space, time_space)
+# ---------------------------- CHAPTER 1: Assignment Module 3
 
 
-cf_option_prices = test_closed_form_solutions(spot_space,
-                                              time_space,
-                                              option_type,
-                                              strike_type,
-                                              averaging_type,
-                                              spot_price, 
-                                              strike_price, 
-                                              risk_free_rate, 
-                                              time_horizon, 
-                                              asset_volatility, 
-                                              timesteps)
+
+# convergence_table = test_martingale_property_asset_price_path_repeated(spot_price, 
+#                                                                        risk_free_rate, 
+#                                                                        asset_volatility, 
+#                                                                        timesteps, 
+#                                                                        antithetic_flag, 
+#                                                                        n_reps = 10)
+
+# volatility or time tending to zero?
+# vol_flag = True -> volatility goes to zero, 
+# vol_flag = False -> time to expiry goes to zero
+
+# vol_flag = True 
+
+# data_frame = test_euler_maruyama(spot_price, 
+#                                 strike_price, 
+#                                 risk_free_rate, 
+#                                 asset_volatility, 
+#                                 time_horizon, 
+#                                 timesteps,
+#                                 num_simulations,
+#                                 antithetic_flag, 
+#                                 vol_flag)
 
 
-#visualize_grid_plot(cf_option_prices, spot_space, time_space)
 
-mc_asian_prices = mc_option_prices[1]; cf_asian_prices = cf_option_prices[1]
-mc_lookback_prices = mc_option_prices[2]; cf_lookback_prices = cf_option_prices[2]
+# ---------------------------- SECTION 1.6.1 Black.Scholes price, convergence of Monte Carlo for plain vanilla European payoff
 
-call_rmse_asian, put_rmse_asian = root_mean_squared_error(mc_asian_prices, cf_asian_prices)
-call_rmse_lookback, put_rmse_lookback = root_mean_squared_error(mc_lookback_prices, cf_lookback_prices)  
 
-print(f'Asian option rmse call:   {call_rmse_asian:0.4f}, put:   {put_rmse_asian:0.4f}')
-print(f'Lookback option rmse call:   {call_rmse_lookback:0.4f}, put:   {put_rmse_lookback:0.4f}')
 
 
 # opt_price_array = []
 # call_rmse_array = np.zeros((4, 4))
 # put_rmse_array = np.zeros((4, 4))
-
 # for n_idx, n in enumerate([1000, 10000, 100000, 1000000]):
 #     for ts_idx, ts in enumerate([252, 504, 756, 1008]):
 #         option_prices, call_rmse, put_rmse, x_var, y_var = test_european_payoff(option_type, 
@@ -131,6 +123,86 @@ print(f'Lookback option rmse call:   {call_rmse_lookback:0.4f}, put:   {put_rmse
 #         opt_price_array.append(option_prices)
 #         call_rmse_array[n_idx][ts_idx] = call_rmse
 #         put_rmse_array[n_idx][ts_idx] = put_rmse
+
+
+
+# ---------------------------- CHAPTER 2: Lookback options
+
+# option_prices, call_rmse, put_rmse, spot_space, space_2nd = test_lookback_payoff(vol_or_time_flag, 
+#                                                                                   option_type, 
+#                                                                                   strike_type, 
+#                                                                                   spot_price, 
+#                                                                                   strike_price, 
+#                                                                                   risk_free_rate, 
+#                                                                                   time_horizon, 
+#                                                                                   asset_volatility, 
+#                                                                                   timesteps, 
+#                                                                                   num_simulations, 
+#                                                                                   antithetic_flag)
+
+# ---------------------------- CHAPTER 3: Asian options
+
+# option_prices, call_rmse, put_rmse, spot_space, space_2nd = test_asian_payoff(vol_or_time_flag, 
+#                                                                               option_type, 
+#                                                                               strike_type, 
+#                                                                               averaging_type, 
+#                                                                               spot_price, 
+#                                                                               strike_price, 
+#                                                                               risk_free_rate, 
+#                                                                               time_horizon, 
+#                                                                               asset_volatility, 
+#                                                                               timesteps, 
+#                                                                               num_simulations, 
+#                                                                               antithetic_flag)      
+
+# ---------------------------- CHAPTER 4: Validation against known closed-form solutions
+
+# mc_option_prices = test_monte_carlo_payoffs(spot_space,
+#                                           time_space,
+#                                           option_type,
+#                                           strike_type,
+#                                           averaging_type,
+#                                           spot_price, 
+#                                           strike_price, 
+#                                           risk_free_rate,
+#                                           time_horizon, 
+#                                           asset_volatility, 
+#                                           timesteps, 
+#                                           num_simulations, 
+#                                           antithetic_flag)
+
+# visualize_grid_plot(mc_option_prices, spot_space, time_space)
+
+
+# cf_option_prices = test_closed_form_solutions(spot_space,
+#                                               time_space,
+#                                               option_type,
+#                                               strike_type,
+#                                               averaging_type,
+#                                               spot_price, 
+#                                               strike_price, 
+#                                               risk_free_rate, 
+#                                               time_horizon, 
+#                                               asset_volatility, 
+#                                               timesteps)
+
+
+# visualize_grid_plot(cf_option_prices, spot_space, time_space)
+
+# mc_asian_prices = mc_option_prices[1]; cf_asian_prices = cf_option_prices[1]
+# mc_lookback_prices = mc_option_prices[2]; cf_lookback_prices = cf_option_prices[2]
+
+# call_rmse_asian, put_rmse_asian = root_mean_squared_error(mc_asian_prices, cf_asian_prices)
+# call_rmse_lookback, put_rmse_lookback = root_mean_squared_error(mc_lookback_prices, cf_lookback_prices)  
+
+# print(f'Asian option rmse call:   {call_rmse_asian:0.4f}, put:   {put_rmse_asian:0.4f}')
+# print(f'Lookback option rmse call:   {call_rmse_lookback:0.4f}, put:   {put_rmse_lookback:0.4f}')
+
+
+
+
+
+
 
 
 
